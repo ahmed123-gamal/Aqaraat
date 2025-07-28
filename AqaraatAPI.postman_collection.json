@@ -1,0 +1,409 @@
+{
+	"info": {
+		"_postman_id": "aqaraat-api-collection",
+		"name": "عقارات أسيوط API",
+		"description": "API Collection لبرنامج عقارات أسيوط",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "المصادقة",
+			"item": [
+				{
+					"name": "تسجيل مستخدم جديد",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"أحمد محمد\",\n  \"email\": \"ahmed@example.com\",\n  \"phoneNumber\": \"01123456789\",\n  \"password\": \"123456\",\n  \"adminPhoneNumber\": \"01153490204\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "تسجيل الدخول",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "العقارات",
+			"item": [
+				{
+					"name": "إنشاء عقار جديد",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"شقة للإيجار في الزهراء\",\n  \"description\": \"شقة مميزة للإيجار في منطقة الزهراء، 3 غرف نوم، 2 حمام، مطبخ مجهز\",\n  \"price\": 2500.00,\n  \"type\": 1,\n  \"category\": 0,\n  \"area\": \"الزهراء\",\n  \"subArea\": \"شارع الرئيسي\",\n  \"numberOfRooms\": 3,\n  \"areaSize\": 120.5,\n  \"floorNumber\": 3,\n  \"hasElevator\": true,\n  \"hasParking\": true,\n  \"hasBalcony\": true,\n  \"address\": \"شارع الرئيسي، الزهراء، أسيوط\",\n  \"imageUrls\": [\"https://example.com/image1.jpg\", \"https://example.com/image2.jpg\"],\n  \"videoUrls\": [\"https://example.com/video1.mp4\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/property",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على عقار محدد",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/property/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "البحث في العقارات",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/property/search?type=1&area=الزهراء&minPrice=2000&maxPrice=3000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property",
+								"search"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "1"
+								},
+								{
+									"key": "area",
+									"value": "الزهراء"
+								},
+								{
+									"key": "minPrice",
+									"value": "2000"
+								},
+								{
+									"key": "maxPrice",
+									"value": "3000"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على المناطق",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/property/areas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property",
+								"areas"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على المناطق الفرعية",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/property/areas/الزهراء/subareas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property",
+								"areas",
+								"الزهراء",
+								"subareas"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على أنواع العقارات",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/property/types",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property",
+								"types"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على فئات العقارات",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/property/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"property",
+								"categories"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "طلبات الطلاب",
+			"item": [
+				{
+					"name": "إنشاء طلب طالب جديد",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentName\": \"محمد أحمد\",\n  \"studentPhone\": \"01123456789\",\n  \"college\": \"كلية الطب\",\n  \"area\": \"الزهراء\",\n  \"subArea\": \"شارع الجامعة\",\n  \"requiredStudentsCount\": 3,\n  \"additionalRequirements\": \"شقة قريبة من الجامعة، مكيفة\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على طلب طالب محدد",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "البحث في طلبات الطلاب",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest/search?college=كلية الطب&area=الزهراء",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest",
+								"search"
+							],
+							"query": [
+								{
+									"key": "college",
+									"value": "كلية الطب"
+								},
+								{
+									"key": "area",
+									"value": "الزهراء"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "تحديث حالة طلب الطالب",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "1"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest/1/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest",
+								"1",
+								"status"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على الكليات",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest/colleges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest",
+								"colleges"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على مناطق طلبات الطلاب",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest/areas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest",
+								"areas"
+							]
+						}
+					}
+				},
+				{
+					"name": "الحصول على حالات الطلبات",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/studentrequest/statuses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"studentrequest",
+								"statuses"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5257"
+		},
+		{
+			"key": "token",
+			"value": "your-jwt-token-here"
+		}
+	]
+} 
