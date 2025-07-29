@@ -17,6 +17,7 @@ interface PropertyFormData {
   phone: string;
   ownerName: string;
   description: string;
+  size: string; // المساحة بالمتر
   images: File[];
   videos: File[];
 }
@@ -35,6 +36,7 @@ const AddProperty = () => {
     phone: "",
     ownerName: "",
     description: "",
+    size: "",
     images: [],
     videos: []
   });
@@ -42,7 +44,7 @@ const AddProperty = () => {
   const areas = [
     "الايمان", "الزهراء", "النميس", "الهلالي", "فريال", "صلاح سالم", 
     "الوديه", "المعلمين", "الاربعين", "المحكمه", "الناصرية", "الحمراء", 
-    "شارع سيد", "موقف الازهر", "نزله عبدالله", "منقباد"
+    "شارع سيد", "موقف الازهر", "نزله عبدالله", "منقباد", "الوليدية", "الكوثر", "المنشية"
   ];
 
   const propertyTypes = [
@@ -121,7 +123,7 @@ const AddProperty = () => {
       return;
     }
 
-    if (!formData.rooms || !formData.price || !formData.phone || !formData.ownerName) {
+    if (!formData.rooms || !formData.price || !formData.phone || !formData.ownerName || !formData.size) {
       toast({
         title: "بيانات مطلوبة",
         description: "يرجى ملء جميع الحقول المطلوبة",
@@ -133,42 +135,62 @@ const AddProperty = () => {
     setIsLoading(true);
 
     try {
-      // Create mock URLs for images and videos
-      const imageUrls = formData.images.map((_, index) => 
-        `https://images.unsplash.com/photo-${1500000000000 + index}?w=400&h=300&fit=crop`
-      );
-      const videoUrls = formData.videos.map((_, index) => 
-        `https://sample-videos.com/zip/10/mp4/SampleVideo_${index + 1}.mp4`
-      );
+      // Create mock URLs for images
+      const imageUrls: string[] = [];
+      for (const image of formData.images) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(image);
+        });
+        imageUrls.push(base64);
+      }
+      
+      // Create mock URLs for videos
+      const videoUrls: string[] = [];
+      for (const video of formData.videos) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(video);
+        });
+        videoUrls.push(base64);
+      }
+
+      const newProperty = {
+        id: Date.now().toString(),
+        title: `${formData.type} - ${formData.area}`,
+        description: formData.description || "عقار مميز في موقع استراتيجي",
+        price: parseInt(formData.price),
+        type: formData.type === "للبيع" ? "buy" : formData.type === "إيجار عائلي" ? "rent-family" : "rent-students",
+        area: formData.area,
+        rooms: parseInt(formData.rooms),
+        size: parseInt(formData.size),
+        contact: formData.phone,
+        ownerName: formData.ownerName,
+        images: imageUrls,
+        videos: videoUrls,
+        addedDate: new Date().toISOString().split('T')[0],
+        ownerId: localStorage.getItem('currentUserId') || 'user_' + Date.now()
+      };
 
       // Save to localStorage
       const existingProperties = JSON.parse(localStorage.getItem('addedProperties') || '[]');
-      const newProperty = {
-        id: Date.now(),
-        type: formData.type,
-        area: formData.area,
-        rooms: parseInt(formData.rooms),
-        price: parseInt(formData.price),
-        phone: formData.phone,
-        ownerName: formData.ownerName,
-        description: formData.description,
-        images: imageUrls,
-        videos: videoUrls,
-        createdAt: new Date().toISOString(),
-        ownerId: 1, // Current user ID
-        views: 0
-      };
-
       existingProperties.push(newProperty);
       localStorage.setItem('addedProperties', JSON.stringify(existingProperties));
 
+      // تحديث إحصائيات الداشبورد
+      const event = new CustomEvent('propertyAdded', { detail: newProperty });
+      window.dispatchEvent(event);
+
       toast({
         title: "تم إضافة العقار بنجاح",
-        description: "تم حفظ بيانات العقار وسيتم مراجعته قريباً"
+        description: "تم حفظ بيانات العقار وهو متاح الآن للعرض",
       });
 
-      // Navigate to dashboard
-      navigate('/dashboard');
+      // Navigate to properties page to show the new property
+      const typeParam = formData.type === "للبيع" ? "buy" : formData.type === "إيجار عائلي" ? "rent-family" : "rent-students";
+      navigate(`/properties?type=${typeParam}&area=${formData.area}&areaName=${formData.area}`);
     } catch (error) {
       toast({
         title: "خطأ في إضافة العقار",
@@ -293,17 +315,30 @@ const AddProperty = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ownerName">اسم المالك *</Label>
+                    <Label htmlFor="size">المساحة (متر مربع) *</Label>
                     <Input
-                      id="ownerName"
-                      type="text"
-                      value={formData.ownerName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, ownerName: e.target.value }))}
-                      placeholder="الاسم الكامل"
+                      id="size"
+                      type="number"
+                      value={formData.size}
+                      onChange={(e) => setFormData(prev => ({ ...prev, size: e.target.value }))}
+                      placeholder="مثال: 120"
                       className="mt-1"
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="ownerName">اسم المالك *</Label>
+                  <Input
+                    id="ownerName"
+                    type="text"
+                    value={formData.ownerName}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ownerName: e.target.value }))}
+                    placeholder="الاسم الكامل"
+                    className="mt-1"
+                    required
+                  />
                 </div>
 
                 <div>

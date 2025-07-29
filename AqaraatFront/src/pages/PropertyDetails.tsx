@@ -53,12 +53,12 @@ const PropertyDetails = () => {
     size: 120,
     contact: "0123456789",
     images: [
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1560448204-5c9e8c8b8b8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1560448204-6c9e8c8b8b8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1560448204-7c9e8c8b8b8b?w=800&h=600&fit=crop",
-      "https://images.unsplash.com/photo-1560448204-8c9e8c8b8b8b?w=800&h=600&fit=crop"
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&fit=crop&auto=format&q=95&sharp=10",
+      "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=1200&h=800&fit=crop&auto=format&q=95&sharp=10",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&fit=crop&auto=format&q=95&sharp=10",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&fit=crop&auto=format&q=95&sharp=10",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&fit=crop&auto=format&q=95&sharp=10",
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&fit=crop&auto=format&q=95&sharp=10"
     ],
     videos: [
       "https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4",
@@ -180,63 +180,118 @@ const PropertyDetails = () => {
           {/* Left Column - Images & Videos */}
           <div className="space-y-6">
             {/* Main Image */}
-            {property.images && property.images.length > 0 && (
+            {property.images && property.images.length > 0 ? (
               <div className="space-y-4">
-                <div className="relative h-96 overflow-hidden rounded-xl shadow-lg">
-                  <img
-                    src={property.images[0]}
-                    alt={property.title}
-                    className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-foreground">صور العقار</h3>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
                     onClick={openImageGallery}
-                  />
-                  <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-2 rounded-full backdrop-blur-sm">
-                    <Image className="w-4 h-4 inline mr-1" />
-                    {property.images.length} صور
-                  </div>
-                  <div className="absolute bottom-4 left-4 bg-brand-orange text-white text-sm px-3 py-2 rounded-full">
-                    {typeLabels[property.type as keyof typeof typeLabels]}
-                  </div>
+                    className="gap-2"
+                  >
+                    <Image className="w-4 h-4" />
+                    عرض جميع الصور ({property.images.length})
+                  </Button>
                 </div>
-
-                {/* Image Gallery */}
-                {property.images.length > 1 && (
-                  <div className="grid grid-cols-4 gap-3">
-                    {property.images.slice(1, 5).map((image, index) => (
-                      <div key={index} className="relative h-24 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <img
-                          src={image}
-                          alt={`صورة ${index + 2}`}
-                          className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-300"
-                          onClick={openImageGallery}
-                        />
-                        {index === 3 && property.images && property.images.length > 5 && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm font-medium">
-                            +{property.images.length - 5}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {property.images.slice(0, 4).map((image, index) => (
+                    <div 
+                      key={index} 
+                      className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group border-2 border-transparent hover:border-brand-orange transition-all duration-300"
+                      onClick={openImageGallery}
+                    >
+                      <img 
+                        src={image} 
+                        alt={`صورة ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        style={{
+                          filter: 'contrast(1.1) brightness(1.05) saturate(1.1)',
+                          imageRendering: 'crisp-edges'
+                        } as React.CSSProperties}
+                        loading="lazy"
+                        onClick={openImageGallery}
+                      />
+                      {index === 3 && property.images.length > 4 && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">
+                            +{property.images.length - 4} صور أخرى
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-foreground">صور العقار</h3>
+                <div className="bg-muted rounded-lg p-8 text-center">
+                  <Image className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">لا توجد صور متاحة لهذا العقار</p>
+                </div>
               </div>
             )}
 
-            {/* Videos */}
+            {/* Property Videos */}
             {property.videos && property.videos.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
-                  <Video className="w-6 h-6 text-brand-orange" />
-                  فيديوهات العقار
-                </h3>
-                <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Video className="w-5 h-5 text-brand-orange" />
+                  <h3 className="text-xl font-bold text-foreground">فيديوهات العقار</h3>
+                  <Badge variant="secondary">{property.videos.length} فيديو</Badge>
+                </div>
+                <div className="grid gap-4">
                   {property.videos.map((video, index) => (
-                    <div key={index} className="rounded-xl overflow-hidden shadow-lg">
+                    <div key={index} className="relative aspect-video rounded-lg overflow-hidden border-2 border-muted hover:border-brand-orange transition-colors duration-300">
                       <video
                         src={video}
                         controls
-                        className="w-full h-64 object-cover"
-                        poster={property.images && property.images[0]}
-                      />
+                        preload="metadata"
+                        className="w-full h-full object-cover bg-black"
+                        poster="https://via.placeholder.com/800x450/1a1a1a/ffffff?text=اضغط+للتشغيل"
+                        style={{
+                          filter: 'contrast(1.1) brightness(1.05)',
+                        }}
+                        onError={(e) => {
+                          console.error('Video failed to load:', video);
+                          const target = e.target as HTMLVideoElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `
+                              <div class="w-full h-full bg-muted flex items-center justify-center">
+                                <div class="text-center text-muted-foreground">
+                                  <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                  </svg>
+                                  <p class="text-sm">فشل في تحميل الفيديو</p>
+                                </div>
+                              </div>
+                            `;
+                          }
+                        }}
+                        onLoadStart={() => {
+                          console.log('Video loading started:', video);
+                        }}
+                        onCanPlay={() => {
+                          console.log('Video can play:', video);
+                        }}
+                      >
+                        <source src={video} type="video/mp4" />
+                        <source src={video} type="video/webm" />
+                        <source src={video} type="video/ogg" />
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <div className="text-center text-muted-foreground">
+                            <Video className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">متصفحك لا يدعم تشغيل الفيديو</p>
+                          </div>
+                        </div>
+                      </video>
+                      <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                        فيديو {index + 1}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -244,19 +299,26 @@ const PropertyDetails = () => {
             )}
           </div>
 
-          {/* Right Column - Details */}
+          {/* Right Column - Property Details */}
           <div className="space-y-6">
-            <Card className="shadow-lg border-0">
+            <Card className="shadow-card border-0">
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <CardTitle className="text-3xl text-foreground">{property.title}</CardTitle>
-                  <Badge variant="secondary" className="text-sm">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-2xl font-bold text-foreground mb-2">
+                      {property.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="w-4 h-4" />
+                      <span>{property.area}</span>
+                    </div>
+                  </div>
+                  <Badge 
+                    variant="secondary" 
+                    className="bg-brand-orange/10 text-brand-orange border-brand-orange/20"
+                  >
                     {typeLabels[property.type as keyof typeof typeLabels]}
                   </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4 text-brand-orange" />
-                  <span className="font-medium">{property.area}</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">

@@ -69,26 +69,71 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(false);
   }, []);
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string): { isValid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { isValid: false, message: 'كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل' };
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return { isValid: false, message: 'كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل' };
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return { isValid: false, message: 'كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل' };
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return { isValid: false, message: 'كلمة المرور يجب أن تحتوي على رقم واحد على الأقل' };
+    }
+    return { isValid: true, message: 'كلمة المرور قوية' };
+  };
+
   const login = async (credentials: LoginRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
       
-      // محاكاة تسجيل الدخول بدون أخطاء
+      // التحقق من صحة الإيميل
+      if (!validateEmail(credentials.email)) {
+        throw new Error('الرجاء إدخال إيميل صحيح');
+      }
+
+      // التحقق من كلمة المرور
+      const passwordValidation = validatePassword(credentials.password || '');
+      if (!passwordValidation.isValid) {
+        throw new Error(passwordValidation.message);
+      }
+      
+      // التحقق من المستخدمين المسجلين
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const user = registeredUsers.find((u: any) => u.email === credentials.email);
+      
+      if (!user) {
+        throw new Error('المستخدم غير موجود. الرجاء التسجيل أولاً');
+      }
+      
+      // محاكاة التحقق من كلمة المرور (في التطبيق الحقيقي ستكون مشفرة)
+      if (user.password && user.password !== credentials.password) {
+        throw new Error('كلمة المرور غير صحيحة');
+      }
+      
       const mockUser = {
-        id: '1',
-        email: credentials.email,
-        phone: credentials.phone,
-        name: 'مستخدم أسيوط'
+        id: user.id.toString(),
+        email: user.email,
+        phone: user.phone || credentials.phone,
+        name: user.name
       };
       
       setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
       localStorage.setItem('token', 'fake-token-123');
+      localStorage.setItem('loginTime', Date.now().toString());
       
       return true;
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -97,19 +142,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterRequest): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const response = await apiClient.register(userData);
       
-      if (response.success && response.data) {
-        setUser(response.data.user);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        return true;
-      } else {
-        console.error('Registration failed:', response.message);
-        return false;
+      // التحقق من صحة الإيميل
+      if (!validateEmail(userData.email)) {
+        throw new Error('الرجاء إدخال إيميل صحيح');
       }
+
+      // التحقق من كلمة المرور
+      const passwordValidation = validatePassword(userData.password || '');
+      if (!passwordValidation.isValid) {
+        throw new Error(passwordValidation.message);
+      }
+      
+      // التحقق من عدم وجود المستخدم مسبقاً
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const existingUser = registeredUsers.find((u: any) => u.email === userData.email);
+      
+      if (existingUser) {
+        throw new Error('هذا الإيميل مسجل مسبقاً');
+      }
+      
+      // إنشاء مستخدم جديد
+      const newUser = {
+        id: Date.now(),
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        password: userData.password, // في التطبيق الحقيقي ستكون مشفرة
+        role: userData.email.includes('@student.aun.edu.eg') ? 'student' : 'owner',
+        registeredAt: new Date().toISOString(),
+        sessionDuration: 0,
+        lastLogin: new Date().toISOString()
+      };
+      
+      // إضافة المستخدم للقائمة
+      registeredUsers.push(newUser);
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      
+      // تسجيل دخول تلقائي
+      const userForAuth = {
+        id: newUser.id.toString(),
+        email: newUser.email,
+        phone: newUser.phone,
+        name: newUser.name
+      };
+      
+      setUser(userForAuth);
+      localStorage.setItem('user', JSON.stringify(userForAuth));
+      localStorage.setItem('token', 'fake-token-123');
+      localStorage.setItem('loginTime', Date.now().toString());
+      
+      return true;
     } catch (error) {
       console.error('Registration error:', error);
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +205,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     apiClient.logout();
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('loginTime');
   };
 
   const value: AuthContextType = {

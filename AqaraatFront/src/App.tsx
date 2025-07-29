@@ -15,8 +15,10 @@ import AddProperty from "./pages/AddProperty";
 import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
 import StudentRequests from "./pages/StudentRequests";
+import AdminManagement from "./pages/AdminManagement";
 import TestConnection from "./pages/TestConnection";
-import MyProperties from "./pages/MyProperties";
+import AllProperties from "./pages/AllProperties";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,14 +82,20 @@ const App = () => (
                 </TermsCheck>
               </ProtectedRoute>
             } />
-            <Route path="/my-properties" element={
+            <Route path="/admin-management" element={
               <ProtectedRoute>
                 <TermsCheck>
-                  <MyProperties />
+                  <AdminManagement />
                 </TermsCheck>
               </ProtectedRoute>
             } />
-
+            <Route path="/all-properties" element={
+              <ProtectedRoute>
+                <TermsCheck>
+                  <AllProperties />
+                </TermsCheck>
+              </ProtectedRoute>
+            } />
             <Route path="/test-connection" element={<TestConnection />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

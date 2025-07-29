@@ -11,6 +11,7 @@ export interface ApiResponse<T> {
 export interface LoginRequest {
   email: string;
   phone: string;
+  password?: string;
 }
 
 export interface LoginResponse {
@@ -263,14 +264,3 @@ class ApiClient {
 
 // Create and export API client instance
 export const apiClient = new ApiClient(API_BASE_URL);
-
-// Export types for use in components
-export type {
-  LoginRequest,
-  LoginResponse,
-  RegisterRequest,
-  Property,
-  CreatePropertyRequest,
-  StudentRequest,
-  CreateStudentRequestRequest,
-}; 

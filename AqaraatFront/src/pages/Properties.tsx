@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowRight, MapPin, Home, ShoppingCart, GraduationCap, Search, Filter, Phone, MessageCircle, Image, Video } from "lucide-react";
+import { ArrowRight, MapPin, Home, ShoppingCart, GraduationCap, Search, Filter, Phone, MessageCircle, Image, Video, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Property {
@@ -20,6 +20,7 @@ interface Property {
   contact: string;
   images?: string[];
   videos?: string[];
+  ownerId?: string; // معرف صاحب العقار
 }
 
 const Properties = () => {
@@ -60,6 +61,7 @@ const Properties = () => {
       rooms: 3,
       size: 120,
       contact: "0123456789",
+      ownerId: "user1",
       images: [
         "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&h=300&fit=crop",
         "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=500&h=300&fit=crop"
@@ -78,6 +80,7 @@ const Properties = () => {
       rooms: 2,
       size: 90,
       contact: "0123456790",
+      ownerId: "user2",
       images: [
         "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&h=300&fit=crop"
       ]
@@ -92,6 +95,7 @@ const Properties = () => {
       rooms: 1,
       size: 25,
       contact: "0123456791",
+      ownerId: "user3",
       images: [
         "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=500&h=300&fit=crop"
       ]
@@ -118,10 +122,30 @@ const Properties = () => {
     // Simulate API call
     setTimeout(() => {
       const allProperties = [...mockProperties, ...getAddedProperties()];
-      const filteredProperties = allProperties.filter(p => p.type === propertyType);
+      // تصفية العقارات حسب النوع والمنطقة المحددة
+      const filteredProperties = allProperties.filter(p => 
+        p.type === propertyType && p.area === area
+      );
       setProperties(filteredProperties);
       setLoading(false);
     }, 1000);
+
+    // Listen for property updates
+    const handlePropertyUpdate = () => {
+      const allProperties = [...mockProperties, ...getAddedProperties()];
+      const filteredProperties = allProperties.filter(p => 
+        p.type === propertyType && p.area === area
+      );
+      setProperties(filteredProperties);
+    };
+
+    window.addEventListener('propertyAdded', handlePropertyUpdate);
+    window.addEventListener('propertyDeleted', handlePropertyUpdate);
+    
+    return () => {
+      window.removeEventListener('propertyAdded', handlePropertyUpdate);
+      window.removeEventListener('propertyDeleted', handlePropertyUpdate);
+    };
   }, [propertyType, area, navigate]);
 
   const handleContact = (contact: string, propertyTitle: string) => {
@@ -147,6 +171,50 @@ const Properties = () => {
     }
     
     navigate(`/properties/${propertyId}`);
+  };
+
+  // نظام الصلاحيات
+  const getCurrentUserId = (): string => {
+    // محاكاة الحصول على معرف المستخدم الحالي
+    return localStorage.getItem('currentUserId') || 'user1';
+  };
+
+  const isAdmin = (): boolean => {
+    // محاكاة التحقق من صلاحيات الأدمن
+    return localStorage.getItem('userRole') === 'admin';
+  };
+
+  const canEditProperty = (property: Property): boolean => {
+    return isAdmin() || property.ownerId === getCurrentUserId();
+  };
+
+  const handleEditProperty = (propertyId: string) => {
+    navigate(`/edit-property/${propertyId}`);
+  };
+
+  const handleDeleteProperty = (propertyId: string, propertyTitle: string) => {
+    if (window.confirm(`هل أنت متأكد من حذف العقار "${propertyTitle}"؟`)) {
+      try {
+        // حذف من localStorage
+        const addedProperties = getAddedProperties();
+        const updatedProperties = addedProperties.filter(p => p.id !== propertyId);
+        localStorage.setItem('addedProperties', JSON.stringify(updatedProperties));
+        
+        // تحديث القائمة
+        setProperties(prev => prev.filter(p => p.id !== propertyId));
+        
+        toast({
+          title: "تم الحذف بنجاح",
+          description: "تم حذف العقار بنجاح",
+        });
+      } catch (error) {
+        toast({
+          title: "خطأ في الحذف",
+          description: "حدث خطأ أثناء حذف العقار",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const TypeIcon = propertyType ? typeIcons[propertyType as keyof typeof typeIcons] : Home;
@@ -254,12 +322,20 @@ const Properties = () => {
             {properties.map((property) => (
               <Card key={property.id} className="hover:shadow-elevated transition-all duration-300 group overflow-hidden">
                 {/* Property Images */}
-                {property.images && property.images.length > 0 && (
+                {property.images && property.images.length > 0 ? (
                   <div className="relative h-56 overflow-hidden">
                     <img
                       src={property.images[0]}
                       alt={property.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      style={{
+                        filter: 'contrast(1.1) brightness(1.05) saturate(1.1)',
+                        imageRendering: 'crisp-edges'
+                      } as React.CSSProperties}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/500x300/f0f0f0/666666?text=صورة+غير+متاحة';
+                      }}
                     />
                     <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
                       <Image className="w-3 h-3 inline mr-1" />
@@ -276,6 +352,18 @@ const Properties = () => {
                         {property.videos.length} فيديو
                       </div>
                     )}
+                  </div>
+                ) : (
+                  <div className="relative h-56 overflow-hidden bg-muted flex items-center justify-center">
+                    <div className="text-center text-muted-foreground">
+                      <Image className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">لا توجد صور متاحة</p>
+                    </div>
+                    <div className="absolute top-3 left-3">
+                      <Badge variant="secondary" className="bg-white/90 text-foreground">
+                        {typeLabels[property.type as keyof typeof typeLabels]}
+                      </Badge>
+                    </div>
                   </div>
                 )}
                 
@@ -333,6 +421,30 @@ const Properties = () => {
                       </Button>
                     </div>
                     
+                    {/* أزرار التعديل والحذف حسب الصلاحيات */}
+                    {canEditProperty(property) && (
+                      <div className="flex gap-2 mb-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 text-blue-600 border-blue-600 hover:bg-blue-50"
+                          onClick={() => handleEditProperty(property.id)}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          تعديل
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 text-red-600 border-red-600 hover:bg-red-50"
+                          onClick={() => handleDeleteProperty(property.id, property.title)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          حذف
+                        </Button>
+                      </div>
+                    )}
+                    
                     <Button 
                       size="lg" 
                       variant="brand"
@@ -353,4 +465,4 @@ const Properties = () => {
   );
 };
 
-export default Properties; 
+export default Properties;

@@ -12,17 +12,46 @@ import assiutLogo from "@/assets/assiut-logo.jpg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
   const { toast } = useToast();
 
+  // التحقق من صحة البريد الإلكتروني
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // التحقق من قوة كلمة المرور
+  const isValidPassword = (password: string) => {
+    return password.length >= 6;
+  };
+
   const handleLogin = async () => {
-    if (!email || !phone) {
+    if (!email || !password) {
       toast({
         title: "خطأ في البيانات",
         description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      toast({
+        title: "بريد إلكتروني غير صحيح",
+        description: "يرجى إدخال بريد إلكتروني صحيح",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      toast({
+        title: "كلمة مرور ضعيفة",
+        description: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
         variant: "destructive",
       });
       return;
@@ -37,7 +66,7 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify({
         id: '1',
         email: email,
-        phone: phone,
+        password: password,
         name: 'مستخدم أسيوط'
       }));
       localStorage.setItem('token', 'fake-token-123');
@@ -113,21 +142,25 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-right block">
-                رقم الهاتف
+              <Label htmlFor="password" className="text-right block">
+                كلمة المرور
               </Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="أدخل رقم هاتفك"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="pl-10 text-right"
+                  id="password"
+                  type="password"
+                  placeholder="أدخل كلمة المرور (6 أحرف على الأقل)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="text-right"
                   dir="rtl"
                 />
               </div>
+              {password && !isValidPassword(password) && (
+                <p className="text-sm text-red-500 text-right">
+                  كلمة المرور يجب أن تكون 6 أحرف على الأقل
+                </p>
+              )}
             </div>
 
             <Button 
@@ -135,7 +168,7 @@ const Login = () => {
               variant="brand"
               size="lg"
               className="w-full text-lg font-medium"
-              disabled={!email || !phone || isLoading}
+              disabled={!email || !password || !isValidEmail(email) || !isValidPassword(password) || isLoading}
             >
               {isLoading ? (
                 <>
