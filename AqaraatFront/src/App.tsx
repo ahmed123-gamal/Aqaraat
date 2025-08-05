@@ -18,6 +18,7 @@ import StudentRequests from "./pages/StudentRequests";
 import AdminManagement from "./pages/AdminManagement";
 import TestConnection from "./pages/TestConnection";
 import AllProperties from "./pages/AllProperties";
+import TestVideoUpload from "./pages/TestVideoUpload";
 
 import NotFound from "./pages/NotFound";
 
@@ -97,8 +98,9 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/test-connection" element={<TestConnection />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+<Route path="/test-video-upload" element={<TestVideoUpload />} />
+{/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+<Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

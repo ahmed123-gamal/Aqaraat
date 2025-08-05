@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Upload, MapPin, Home, Loader2, X, Image, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { propertyService, CreatePropertyRequest, PropertyImage, PropertyVideo } from "@/services/propertyService";
 
 interface PropertyFormData {
   type: string;
@@ -17,7 +18,7 @@ interface PropertyFormData {
   phone: string;
   ownerName: string;
   description: string;
-  size: string; // المساحة بالمتر
+  size: string;
   images: File[];
   videos: File[];
 }
@@ -135,66 +136,192 @@ const AddProperty = () => {
     setIsLoading(true);
 
     try {
-      // Create mock URLs for images
-      const imageUrls: string[] = [];
-      for (const image of formData.images) {
+      // تحويل الصور إلى base64
+      const imagePromises = formData.images.map(async (image, index) => {
         const reader = new FileReader();
         const base64 = await new Promise<string>((resolve) => {
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(image);
         });
-        imageUrls.push(base64);
-      }
-      
-      // Create mock URLs for videos
-      const videoUrls: string[] = [];
-      for (const video of formData.videos) {
+        
+        const propertyImage: PropertyImage = {
+          imageUrl: base64,
+          caption: `صورة العقار ${index + 1}`,
+          type: index === 0 ? 'Main' : 'Interior',
+          isMain: index === 0,
+          orderIndex: index,
+          altText: `صورة العقار - ${formData.area}`
+        };
+        
+        return propertyImage;
+      });
+
+      // تحويل الفيديوهات إلى base64
+      const videoPromises = formData.videos.map(async (video, index) => {
         const reader = new FileReader();
         const base64 = await new Promise<string>((resolve) => {
           reader.onload = () => resolve(reader.result as string);
           reader.readAsDataURL(video);
         });
-        videoUrls.push(base64);
-      }
+        
+        const propertyVideo: PropertyVideo = {
+          videoUrl: base64,
+          caption: `فيديو العقار ${index + 1}`,
+          type: 'Tour',
+          isMain: index === 0,
+          orderIndex: index,
+          altText: `فيديو العقار - ${formData.area}`
+        };
+        
+        return propertyVideo;
+      });
 
-      const newProperty = {
-        id: Date.now().toString(),
+      const [images, videos] = await Promise.all([
+        Promise.all(imagePromises),
+        Promise.all(videoPromises)
+      ]);
+
+      // تحضير بيانات العقار للـ API
+      const propertyData: CreatePropertyRequest = {
         title: `${formData.type} - ${formData.area}`,
         description: formData.description || "عقار مميز في موقع استراتيجي",
         price: parseInt(formData.price),
-        type: formData.type === "للبيع" ? "buy" : formData.type === "إيجار عائلي" ? "rent-family" : "rent-students",
+        type: formData.type === "للبيع" ? "Sale" : 
+              formData.type === "إيجار عائلي" ? "FamilyRent" : "StudentRent",
+        category: "Apartment", // يمكن إضافة اختيار نوع العقار لاحقاً
         area: formData.area,
-        rooms: parseInt(formData.rooms),
-        size: parseInt(formData.size),
-        contact: formData.phone,
-        ownerName: formData.ownerName,
-        images: imageUrls,
-        videos: videoUrls,
-        addedDate: new Date().toISOString().split('T')[0],
-        ownerId: localStorage.getItem('currentUserId') || 'user_' + Date.now()
+        subArea: formData.area, // نفس المنطقة مؤقتاً
+        
+        // تفاصيل الشقة
+        numberOfRooms: parseInt(formData.rooms),
+        numberOfBathrooms: 1, // قيمة افتراضية
+        numberOfLivingRooms: 1, // قيمة افتراضية
+        numberOfKitchens: 1, // قيمة افتراضية
+        areaSize: parseInt(formData.size),
+        
+        // تفاصيل المبنى - قيم افتراضية
+        floorNumber: 1,
+        totalFloors: 3,
+        hasElevator: false,
+        hasParking: false,
+        hasBalcony: false,
+        hasGarden: false,
+        hasTerrace: false,
+        
+        // الخدمات - قيم افتراضية
+        hasAirConditioning: false,
+        hasHeating: false,
+        hasInternet: false,
+        hasSatellite: false,
+        hasFurniture: false,
+        hasAppliances: false,
+        
+        // الأمان - قيم افتراضية
+        hasSecurity: false,
+        hasCCTV: false,
+        hasGuard: false,
+        
+        // الموقع
+        address: formData.area,
+        landmark: "",
+        distanceFromUniversity: 5.0,
+        distanceFromCityCenter: 3.0,
+        
+        // للطلاب فقط
+        requiredStudentsCount: formData.type === "إيجار طلاب" ? 2 : undefined,
+        allowedColleges: "",
+        isFemaleOnly: false,
+        isMaleOnly: false,
+        isMixed: formData.type === "إيجار طلاب",
+        
+        // الصور والفيديوهات
+        images,
+        videos
       };
 
-      // Save to localStorage
-      const existingProperties = JSON.parse(localStorage.getItem('addedProperties') || '[]');
-      existingProperties.push(newProperty);
-      localStorage.setItem('addedProperties', JSON.stringify(existingProperties));
+      let result;
+      try {
+        // إرسال البيانات للـ API فقط - لا نستخدم localStorage للصور
+        result = await propertyService.createProperty(propertyData);
+        console.log('Property created successfully via API:', result);
+        
+        toast({
+          title: "تم إضافة العقار بنجاح",
+          description: "تم حفظ بيانات العقار في قاعدة البيانات وهو متاح الآن للعرض",
+        });
 
-      // تحديث إحصائيات الداشبورد
-      const event = new CustomEvent('propertyAdded', { detail: newProperty });
-      window.dispatchEvent(event);
+        // إرسال حدث لتحديث الصفحات الأخرى
+        window.dispatchEvent(new CustomEvent('propertyAdded', { detail: result }));
 
-      toast({
-        title: "تم إضافة العقار بنجاح",
-        description: "تم حفظ بيانات العقار وهو متاح الآن للعرض",
-      });
+        // التنقل إلى صفحة البحث مع المعاملات المناسبة
+        const typeParam = formData.type === "للبيع" ? "buy" : 
+                         formData.type === "إيجار عائلي" ? "rent-family" : "rent-students";
+        navigate(`/properties?type=${typeParam}&area=${formData.area}&areaName=${formData.area}`);
+        
+      } catch (apiError) {
+        console.error('API Error:', apiError);
+        
+        // في حالة فشل الـ API، نحفظ البيانات الأساسية فقط (بدون صور)
+        const basicProperty = {
+          id: Date.now().toString(),
+          title: propertyData.title,
+          description: propertyData.description,
+          price: propertyData.price,
+          type: propertyData.type,
+          area: propertyData.area,
+          subArea: propertyData.subArea,
+          rooms: propertyData.numberOfRooms,
+          size: propertyData.areaSize,
+          ownerName: formData.ownerName,
+          phone: formData.phone,
+          // لا نحفظ الصور والفيديوهات في localStorage لتجنب quota exceeded
+          images: [],
+          videos: [],
+          createdAt: new Date().toISOString(),
+          userId: localStorage.getItem('userId') || '1',
+          isActive: true
+        };
 
-      // Navigate to properties page to show the new property
-      const typeParam = formData.type === "للبيع" ? "buy" : formData.type === "إيجار عائلي" ? "rent-family" : "rent-students";
-      navigate(`/properties?type=${typeParam}&area=${formData.area}&areaName=${formData.area}`);
+        try {
+          // حفظ البيانات الأساسية فقط
+          const existingProperties = JSON.parse(localStorage.getItem('properties') || '[]');
+          existingProperties.push(basicProperty);
+          localStorage.setItem('properties', JSON.stringify(existingProperties));
+          
+          // تحديث عدد العقارات
+          const currentCount = parseInt(localStorage.getItem('propertyCount') || '0');
+          localStorage.setItem('propertyCount', (currentCount + 1).toString());
+          
+          toast({
+            title: "تم حفظ العقار مؤقتاً",
+            description: "تم حفظ بيانات العقار الأساسية. يرجى التأكد من تشغيل الخادم لحفظ الصور والفيديوهات",
+            variant: "destructive"
+          });
+          
+          result = basicProperty;
+          
+          // إرسال حدث لتحديث الصفحات الأخرى
+          window.dispatchEvent(new CustomEvent('propertyAdded', { detail: result }));
+
+          // التنقل إلى صفحة البحث
+          const typeParam = formData.type === "للبيع" ? "ForSale" : 
+                           formData.type === "إيجار عائلي" ? "ForRentFamily" : "ForRentStudents";
+          navigate(`/properties?type=${typeParam}&area=${formData.area}&areaName=${formData.area}`);
+          
+        } catch (storageError) {
+          console.error('Storage Error:', storageError);
+          toast({
+            title: "خطأ في حفظ البيانات",
+            description: "يرجى تشغيل الخادم أو تنظيف ذاكرة التخزين المحلية",
+            variant: "destructive"
+          });
+        }
+      }
     } catch (error) {
+      console.error('Error creating property:', error);
       toast({
         title: "خطأ في إضافة العقار",
-        description: "حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى",
+        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى",
         variant: "destructive"
       });
     } finally {

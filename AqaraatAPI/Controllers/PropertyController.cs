@@ -62,38 +62,30 @@ namespace AqaraatAPI.Controllers
         }
 
         [HttpGet("areas")]
-        public async Task<IActionResult> GetAreas()
+        public IActionResult GetAreas()
         {
-            var areas = await _propertyService.GetAreasAsync();
+            var areas = _propertyService.GetAreas();
             return Ok(areas);
         }
 
         [HttpGet("areas/{area}/subareas")]
-        public async Task<IActionResult> GetSubAreas(string area)
+        public IActionResult GetSubAreas(string area)
         {
-            var subAreas = await _propertyService.GetSubAreasAsync(area);
+            var subAreas = _propertyService.GetSubAreas(area);
             return Ok(subAreas);
         }
 
         [HttpGet("types")]
         public IActionResult GetPropertyTypes()
         {
-            var types = Enum.GetValues(typeof(PropertyType))
-                .Cast<PropertyType>()
-                .Select(t => new { Value = (int)t, Name = t.ToString() })
-                .ToList();
-
+            var types = _propertyService.GetPropertyTypes();
             return Ok(types);
         }
 
         [HttpGet("categories")]
         public IActionResult GetPropertyCategories()
         {
-            var categories = Enum.GetValues(typeof(PropertyCategory))
-                .Cast<PropertyCategory>()
-                .Select(c => new { Value = (int)c, Name = c.ToString() })
-                .ToList();
-
+            var categories = _propertyService.GetPropertyCategories();
             return Ok(categories);
         }
     }

@@ -50,7 +50,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:8081", "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:8081")
+        policy.WithOrigins("http://localhost:8081", "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:8081", "http://localhost:8080")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -70,9 +70,20 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
+// إضافة دعم الملفات الثابتة
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Seed data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.MigrateAsync();
+    await SeedData.SeedPropertiesAsync(context);
+}
 
 app.Run();

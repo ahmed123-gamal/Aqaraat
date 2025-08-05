@@ -397,34 +397,34 @@ namespace AqaraatAPI.Services
             }).ToList();
         }
 
-        public async Task<List<string>> GetAreasAsync()
+        public List<string> GetAreas()
         {
-            return await _context.Properties
+            return _context.Properties
                 .Where(p => p.IsActive)
                 .Select(p => p.Area)
                 .Distinct()
                 .OrderBy(a => a)
-                .ToListAsync();
+                .ToList();
         }
 
-        public async Task<List<string>> GetSubAreasAsync(string area)
+        public List<string> GetSubAreas(string area)
         {
-            return await _context.Properties
+            return _context.Properties
                 .Where(p => p.IsActive && p.Area == area)
                 .Select(p => p.SubArea)
                 .Distinct()
                 .OrderBy(a => a)
-                .ToListAsync();
+                .ToList();
         }
 
-        public async Task<List<string>> GetPropertyTypesAsync()
+        public List<string> GetPropertyTypes()
         {
             return Enum.GetValues<PropertyType>()
                 .Select(t => t.ToString())
                 .ToList();
         }
 
-        public async Task<List<string>> GetPropertyCategoriesAsync()
+        public List<string> GetPropertyCategories()
         {
             return Enum.GetValues<PropertyCategory>()
                 .Select(c => c.ToString())

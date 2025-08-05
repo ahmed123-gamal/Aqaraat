@@ -3,17 +3,14 @@ using AqaraatAPI.Models;
 
 namespace AqaraatAPI.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Property> Properties { get; set; }
-        public DbSet<PropertyImage> PropertyImages { get; set; }
-        public DbSet<PropertyVideo> PropertyVideos { get; set; }
-        public DbSet<StudentRequest> StudentRequests { get; set; }
+        public required DbSet<User> Users { get; set; }
+        public required DbSet<Property> Properties { get; set; }
+        public required DbSet<PropertyImage> PropertyImages { get; set; }
+        public required DbSet<PropertyVideo> PropertyVideos { get; set; }
+        public required DbSet<StudentRequest> StudentRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -84,4 +81,4 @@ namespace AqaraatAPI.Data
             });
         }
     }
-} 
+}

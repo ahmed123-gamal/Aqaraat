@@ -19,22 +19,44 @@ const Areas = () => {
   };
 
   const areas = [
-    { id: "aliman", name: "الايمان", count: 12 },
-    { id: "alzahra", name: "الزهراء", count: 8 },
-    { id: "alkhamis", name: "الخميس", count: 15 },
-    { id: "alhelali", name: "الهلالي", count: 6 },
-    { id: "frial", name: "فريال", count: 10 },
-    { id: "salah-salem", name: "صلاح سالم", count: 20 },
-    { id: "alwadia", name: "الوديه", count: 7 },
-    { id: "almoalimin", name: "المعلمين", count: 14 },
-    { id: "alarbaein", name: "الاربعين", count: 9 },
-    { id: "almahkama", name: "المحكمه", count: 11 },
-    { id: "alnaseria", name: "الناصرية", count: 5 },
-    { id: "alhamra", name: "الحمراء", count: 13 },
-    { id: "sayed-street", name: "شارع سيد", count: 18 },
-    { id: "azhar-station", name: "موقف الازهر", count: 16 },
-    { id: "abdullah-nazla", name: "نزله عبدالله", count: 4 },
-    { id: "manqabad", name: "منقباد", count: 8 }
+    // القيسارية – المجاهدين – غرب البلد – الجمهورية – يسري راغب – الهلالي – ثابت
+    { id: "alqaysariya", name: "القيسارية", count: 15 },
+    { id: "almujahidin", name: "المجاهدين", count: 12 },
+    { id: "gharb-albalad", name: "غرب البلد", count: 18 },
+    { id: "aljumhuriyah", name: "الجمهورية", count: 22 },
+    { id: "yusri-ragab", name: "يسري راغب", count: 14 },
+    { id: "alhelali", name: "الهلالي", count: 16 },
+    { id: "thabit", name: "ثابت", count: 10 },
+    
+    // الوليدية – 26 يوليو – الجيش – السادات – مساكن الأزهر – الفتح
+    { id: "alwalidiyah", name: "الوليدية", count: 20 },
+    { id: "26-july", name: "26 يوليو", count: 25 },
+    { id: "aljaysh", name: "الجيش", count: 18 },
+    { id: "alsadat", name: "السادات", count: 16 },
+    { id: "masakin-alazhar", name: "مساكن الأزهر", count: 30 },
+    { id: "alfath", name: "الفتح", count: 12 },
+    
+    // الحمراء – منقباد – السلام – مساكن الشباب
+    { id: "alhamra", name: "الحمراء", count: 24 },
+    { id: "manqabad", name: "منقباد", count: 15 },
+    { id: "alsalam", name: "السلام", count: 19 },
+    { id: "masakin-alshabab", name: "مساكن الشباب", count: 28 },
+    
+    // نزلة عبداللاه – الأربعين – كدواني – المعلمين – منشية المعلمين
+    { id: "nazlat-abdullah", name: "نزلة عبداللاه", count: 8 },
+    { id: "alarbaein", name: "الأربعين", count: 14 },
+    { id: "kadwani", name: "كدواني", count: 11 },
+    { id: "almoalimin", name: "المعلمين", count: 26 },
+    { id: "manshiyat-almoalimin", name: "منشية المعلمين", count: 20 },
+    
+    // سيتي – الفردوس – الهضبة – حوض الزعفران – ميدان البنوك – شارع الرياض – شارع سيد
+    { id: "city", name: "سيتي", count: 32 },
+    { id: "alfirdaws", name: "الفردوس", count: 18 },
+    { id: "alhadabah", name: "الهضبة", count: 22 },
+    { id: "hawd-alzaafaran", name: "حوض الزعفران", count: 12 },
+    { id: "maydan-albunuk", name: "ميدان البنوك", count: 35 },
+    { id: "shari-alriyadh", name: "شارع الرياض", count: 28 },
+    { id: "shari-sayyid", name: "شارع سيد", count: 30 }
   ];
 
   const centers = [
